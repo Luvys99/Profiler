@@ -1,6 +1,5 @@
-﻿#include "Profiler.h"
+#include "Profile.h"
 
-ProfileManager g_ProfileManager;
 LARGE_INTEGER Profile::Freq = { 0 };
 
 //private
