@@ -1,4 +1,4 @@
-#include "Profiler.h"
+#include "Profile.h"
 using namespace std;
 
 void Test1()
@@ -48,12 +48,12 @@ int main()
 
         if (GetAsyncKeyState(VK_RETURN) & 0x0001)
         {
-            g_ProfileManager.WriteProfile("ProfileReport.txt");
+            ProfileManager::GetInstance().WriteProfile("ProfileReport.txt");
         }
 
         if (count == 5000)
         {
-            g_ProfileManager.ResetProfile();
+            ProfileManager::GetInstance().ResetProfile();
         }
 
         if (GetAsyncKeyState(VK_ESCAPE))
