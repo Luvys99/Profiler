@@ -18,43 +18,51 @@ class ProfileManager
 private:
 	ProfileData list[30];
 	int arridx = 0;
+	// ìƒì„±ìë¥¼ privateë¡œ ìˆ¨ê²¨ì„œ ì™¸ë¶€ì—ì„œ ë§ˆìŒëŒ€ë¡œ ìƒì„± ëª»í•˜ê²Œ ë§‰ìŒ
+	ProfileManager() {}
+	//ë³µì‚¬ ìƒì„±ì, ëŒ€ì… ì—°ì‚°ìë„ ì‚­ì œ ( ë³µì œ ë°©ì§€ )
+	ProfileManager(const ProfileManager& ref) = delete;
+	ProfileManager& operator=(const ProfileManager& ref) = delete;
 
-	// ±¸Á¶Ã¼ ³»ÀÇ Áß¿äÇÑ µ¥ÀÌÅÍ±â ¶§¹®¿¡ ÇÔ¼ö ³»ºÎ¿¡¼­¸¸ Á¢±Ù
+	// êµ¬ì¡°ì²´ ë‚´ì˜ ì¤‘ìš”í•œ ë°ì´í„°ê¸° ë•Œë¬¸ì— í•¨ìˆ˜ ë‚´ë¶€ì—ì„œë§Œ ì ‘ê·¼
 	void UpdataTimeData(int idx, double time);
 	void UpdateMinMax(int idx, double time);
-	// ¿ÜºÎ¿¡¼­ Á¢±ÙÇÏ´Â ÇÔ¼öµé
+	// ì™¸ë¶€ì—ì„œ ì ‘ê·¼í•˜ëŠ” í•¨ìˆ˜ë“¤
 public:
-	// ÀÌ¸§À» ¹Ş¾Æ¼­ ÀÎµ¦½º¸¦ ¹İÈ¯ÇÏ´Â ÇÔ¼ö
+	static ProfileManager& GetInstance()
+	{
+		static ProfileManager instance;
+		return instance;
+	}
+
+	// ì´ë¦„ì„ ë°›ì•„ì„œ ì¸ë±ìŠ¤ë¥¼ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
 	int GetProfileID(const char* name);
-	// ½ÇÇà½Ã°£ ÃøÁ¤ÇÑ µ¥ÀÌÅÍ ÀúÀå
+	// ì‹¤í–‰ì‹œê°„ ì¸¡ì •í•œ ë°ì´í„° ì €ì¥
 	void SaveData(double time, int idx);
-	// ÆÄÀÏ ¿ÀÇÂ ÇÔ¼ö
+	// íŒŒì¼ ì˜¤í”ˆ í•¨ìˆ˜
 	FILE* OpenFile(const char* filename);
-	// ¸®Æ÷Æ® Å¸ÀÌÆ²±×¸®´Â ÇÔ¼ö
+	// ë¦¬í¬íŠ¸ íƒ€ì´í‹€ê·¸ë¦¬ëŠ” í•¨ìˆ˜
 	void DrawProfileReportTitle(FILE* fp);
-	// ¸®Æ÷Æ® ±×¸®´Â ÇÔ¼ö
+	// ë¦¬í¬íŠ¸ ê·¸ë¦¬ëŠ” í•¨ìˆ˜
 	void DrawProfileReport(FILE* fp);
-	// ¿£ÅÍ´©¸£¸é ÇÑ ¹ø È£ÃâÇÏ´Â ÇÔ¼ö¶ó °¡µ¶¼º ÃÖ¿ì¼±
+	// ì—”í„°ëˆ„ë¥´ë©´ í•œ ë²ˆ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜ë¼ ê°€ë…ì„± ìµœìš°ì„ 
 	void WriteProfile(const char* filename);
-	// ÃÊ±âÈ­ ÇÔ¼ö ( ¿Ã¹Ù¸¥ ÃøÁ¤À» À§ÇÑ )
+	// ì´ˆê¸°í™” í•¨ìˆ˜ ( ì˜¬ë°”ë¥¸ ì¸¡ì •ì„ ìœ„í•œ )
 	void ResetProfile();
 
 };
 
-// Àü¿ª °´Ã¼¸¦ ¼±¾ğÇØ¼­ ¿©·¯ °³ÀÇ Profile °´Ã¼µéÀÌ ÇÏ³ªÀÇ °ü¸® °´Ã¼¿¡ µ¥ÀÌÅÍ¸¦ ÀúÀåÇÏ°Ô²û
-extern ProfileManager g_ProfileManager;
-
 class Profile
 {
 private:
-	//Freq ÃÖÃÊ¿¡ 1È¸¸¸ ¼±¾ğµÇ°Ô²û static ¼±¾ğ
+	//Freq ìµœì´ˆì— 1íšŒë§Œ ì„ ì–¸ë˜ê²Œë” static ì„ ì–¸
 	static LARGE_INTEGER Freq;
 	LARGE_INTEGER Start;
 	LARGE_INTEGER End;
 	int _profileID;
 	double _time = 0;
 public:
-	//ÀÌ¸§ ÀúÀåÇÏÁö ¾Ê°í ÇÔ¼ö ÀÌ¸§À¸·Î ¹Ù·Î ¾ÆÀÌµğ µî·Ï
+	//ì´ë¦„ ì €ì¥í•˜ì§€ ì•Šê³  í•¨ìˆ˜ ì´ë¦„ìœ¼ë¡œ ë°”ë¡œ ì•„ì´ë”” ë“±ë¡
 	Profile(const char* myname, int& staticID)
 	{
 		if (Freq.QuadPart == 0)
@@ -64,7 +72,7 @@ public:
 
 		if (staticID == -1)
 		{
-			staticID = g_ProfileManager.GetProfileID(myname);
+			staticID = ProfileManager::GetInstance().GetProfileID(myname);
 		}
 		_profileID = staticID;
 		QueryPerformanceCounter(&Start);
@@ -72,15 +80,15 @@ public:
 	~Profile()
 	{
 		QueryPerformanceCounter(&End);
-		// ¸¶ÀÌÅ©·Î¼¼ÄÁÁî ´ÜÀ§·Î ÀúÀå
+		// ë§ˆì´í¬ë¡œì„¸ì»¨ì¦ˆ ë‹¨ìœ„ë¡œ ì €ì¥
 		_time = (double)((End.QuadPart - Start.QuadPart) * 1000000) / (double)Freq.QuadPart;
-		//½ÇÇà ÃøÁ¤ ÇÔ¼ö ÀÌ¸§ÀÌ¶û, ½Ã°£ ÀúÀå ÇÔ¼ö
-		g_ProfileManager.SaveData(_time, _profileID);
+		// ì‹¤í–‰ ì¸¡ì • í•¨ìˆ˜ ì´ë¦„ì´ë‘, ì‹œê°„ ì €ì¥ í•¨ìˆ˜
+		ProfileManager::GetInstance().SaveData(_time, _profileID);
 	}
 
 };
 
-// ¸ÅÅ©·Î "\"µÚ¿¡ °ø¹éµé¾î°¡¸é ¿À·ù ¹Ù·Î "\n"ÇØ¾ßµÊ
+// ë§¤í¬ë¡œ "\"ë’¤ì— ê³µë°±ë“¤ì–´ê°€ë©´ ì˜¤ë¥˜ ë°”ë¡œ "\n"í•´ì•¼ë¨
 #define PROFILE \
 	static int _my_profile_id = -1; \
 	Profile _p(__FUNCTION__, _my_profile_id)
