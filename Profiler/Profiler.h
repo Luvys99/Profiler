@@ -4,10 +4,11 @@
 #include <cstring>
 #include <iostream>
 
+#ifndef PROFILE
 // 매크로 "\"뒤에 공백들어가면 오류 바로 "\n"해야됨
 #define PROFILE \
-	static int _my_profile_id = -1; \
-	Profiler _p(__FUNCTION__, _my_profile_id)
+	Profiler _p((__FUNCTION__)
+#endif
 
 struct ProfileData
 {
@@ -26,13 +27,17 @@ ProfileData list[30];
 class Profiler
 {
 public:
-	Profiler()
+	Profiler() {	}
+	Profiler(const wchar_t* funcname) : tag(funcname)
 	{
+		// 1초의 진동 주기 
+		QueryPerformanceFrequency(&Freq);
+		Profiler_begin(tag);
 
 	}
 	~Profiler()
 	{
-
+		Profiler_end(tag);
 	}
 
 	inline void Profiler_begin(const wchar_t* funcname) noexcept;
@@ -40,6 +45,8 @@ public:
 
 	// 이름을 받아서 인덱스를 반환하는 함수
 	inline int GetProfileID(const wchar_t* funcname) noexcept;
+	// 함수 이름 인덱스로 등록하는 함수
+	inline void RegisterFuncName(const wchar_t* funcname) noexcept;
 	// 실행시간 측정한 데이터 저장
 	inline void SaveData(double time, int idx) noexcept;
 	// 파일 오픈 함수
@@ -57,6 +64,7 @@ private:
 	static LARGE_INTEGER Freq;
 	LARGE_INTEGER Start;
 	LARGE_INTEGER End;
+	const wchar_t* tag;
 	int _profileID;
 	double _time = 0;
 
@@ -68,16 +76,24 @@ private:
 
 };
 
-inline void Profiler_begin(const wchar_t* funcname) noexcept
+inline void Profiler::Profiler_begin(const wchar_t* funcname) noexcept
 {
-
+	// 측정할 함수 등록
+	RegisterFuncName(funcname);
+	// 시작 측정 시작
+	QueryPerformanceCounter(&Start);
 
 }
 
-inline void Profiler_end(const wchar_t* funcname) noexcept
+inline void Profiler::Profiler_end(const wchar_t* funcname) noexcept
 {
+	// 측정 종료 ( 함수 하나의 시간 측정 )
+	QueryPerformanceCounter(&End);
+	double deltatime = (double)(End.QuadPart - Start.QuadPart) / Freq.QuadPart;
 
-
+	// idx 찾아서 거기에 시간 추가
+	int currentidx = GetProfileID(funcname);
+	SaveData(deltatime, currentidx); // 측정 시간 저장
 }
 
 
@@ -111,8 +127,17 @@ inline int Profiler::GetProfileID(const wchar_t* funcname) noexcept
 		}
 	}
 
-	// 30개 이상 측정 안할꺼라서 배열 갯수 확인하는 비교문 제거
-	// 프로파일 배열 등록
+	// ID가 존재하지 않는다면 return
+	return -1;
+	
+}
+
+inline void Profiler::RegisterFuncName(const wchar_t* funcname) noexcept
+{
+	// arridx 값은 등록할 때만 ++ 되니까 굳이 검사 하지 않고 바로 등록
+	// 예외로 30개까지가 끝인데 0 이하거나 30이상인 경우 리턴
+	if (arridx < 0 || arridx >= 30) return;
+
 	list[arridx]._flag = 1;
 	list[arridx]._name = funcname;
 	list[arridx]._Max = 0;
@@ -120,13 +145,12 @@ inline int Profiler::GetProfileID(const wchar_t* funcname) noexcept
 	list[arridx]._totaltime = 0.0;
 	list[arridx]._callcount = 0;
 
-	// 등록했으면 갯수 증가
-	return arridx++;
+	arridx++;
 }
 
 inline void Profiler::SaveData(double time, int idx) noexcept
 {
-	if (idx < 0 || idx > 30) return;
+	if (idx < 0 || idx >= 30) return;
 
 	// 시간 업데이트, Min, Max 업데이트 함수 분리
 	UpdataTimeData(idx, time);

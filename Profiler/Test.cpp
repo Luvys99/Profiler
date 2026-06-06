@@ -37,7 +37,9 @@ void Test3()
 
 int main()
 {
+    Profiler p;
     int count = 0;
+
     while (1)
     {
         count++;
@@ -48,12 +50,12 @@ int main()
 
         if (GetAsyncKeyState(VK_RETURN) & 0x0001)
         {
-            g_ProfileManager.WriteProfile("ProfileReport.txt");
+            p.WriteProfile(L"ProfileReport.txt");
         }
 
         if (count == 5000)
         {
-            g_ProfileManager.ResetProfile();
+            p.ResetProfile();
         }
 
         if (GetAsyncKeyState(VK_ESCAPE))
