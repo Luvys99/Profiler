@@ -198,7 +198,9 @@ inline void Profiler::DrawProfileReport(FILE* fp) const noexcept
 {
 	for (int idx = 0; idx < arridx; idx++)
 	{
-		fwprintf(fp, L"\t| %ls  |  %lfs\t|  %lfs\t|  %lfs\t|\t%d\n", list[idx]._name, list[idx]._totaltime / list[idx]._callcount,
+		double averageTime = (list[idx]._callcount > 0) ? (list[idx]._totaltime / list[idx]._callcount) : 0.0;
+
+		fwprintf(fp, L"\t| %ls  |  %lfs\t|  %lfs\t|  %lfs\t|\t%d\n", list[idx]._name, averageTime,
 			list[idx]._Min, list[idx]._Max, list[idx]._callcount);
 	}
 	fwprintf(fp, L"\t---------------------------------------------------------------------------------------------\n");
