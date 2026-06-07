@@ -7,7 +7,7 @@
 #ifndef PROFILE
 // 매크로 "\"뒤에 공백들어가면 오류 바로 "\n"해야됨
 #define PROFILE \
-	Profiler _p((__FUNCTION__)
+	Profiler _p(__FUNCTIONW__);
 #endif
 
 struct ProfileData
@@ -23,15 +23,14 @@ struct ProfileData
 
 // 전역 배열 선언
 ProfileData list[30];
+int arridx = 0;
 
 class Profiler
 {
 public:
-	Profiler() {	}
+	Profiler() {}
 	Profiler(const wchar_t* funcname) : tag(funcname)
 	{
-		// 1초의 진동 주기 
-		QueryPerformanceFrequency(&Freq);
 		Profiler_begin(tag);
 
 	}
@@ -42,6 +41,13 @@ public:
 
 	inline void Profiler_begin(const wchar_t* funcname) noexcept;
 	inline void Profiler_end(const wchar_t* funcname) noexcept;
+
+	static LARGE_INTEGER GetInitFrequency()
+	{
+		LARGE_INTEGER Freq;
+		QueryPerformanceFrequency(&Freq);
+		return Freq;
+	}
 
 	// 이름을 받아서 인덱스를 반환하는 함수
 	inline int GetProfileID(const wchar_t* funcname) noexcept;
@@ -60,15 +66,14 @@ public:
 	// 초기화 함수 ( 올바른 측정을 위한 )
 	inline void ResetProfile() noexcept;
 private:
-	// 마이크로세컨드 또는 고성능포퍼먼스 타이머를 사용하기 위한 변수
-	static LARGE_INTEGER Freq;
+	// Frequency 초기화 함수를 호출해서 바로 .cpp가 아닌 .h에서 초기화
+	inline static LARGE_INTEGER Freq = GetInitFrequency();
+	inline static int arridx = 0;
 	LARGE_INTEGER Start;
 	LARGE_INTEGER End;
 	const wchar_t* tag;
 	int _profileID;
 	double _time = 0;
-
-	int arridx = 0;
 
 	// 구조체 내의 중요한 데이터기 때문에 함수 내부에서만 접근
 	inline void UpdataTimeData(int idx, double time) noexcept;
@@ -78,9 +83,16 @@ private:
 
 inline void Profiler::Profiler_begin(const wchar_t* funcname) noexcept
 {
-	// 측정할 함수 등록
-	RegisterFuncName(funcname);
-	// 시작 측정 시작
+	// 이미 등록한 함수인지 확인
+	int idx = GetProfileID(funcname);
+
+	// 등록안된 함수라면 등록
+	if (idx == -1)
+	{
+		RegisterFuncName(funcname);
+	}
+
+	// 측정 시작
 	QueryPerformanceCounter(&Start);
 
 }
@@ -161,10 +173,10 @@ inline FILE* Profiler::OpenFile(const wchar_t* filename) noexcept
 {
 	FILE* fp = nullptr;
 	//fopen_s 반환값은 성공하면 0, 에러가 발생하면 에러코드(errno_t)
-	errno_t err = fopen_s(&fp, (char*)filename, "w");
+	errno_t err = _wfopen_s(&fp, filename, L"w");
 	if (err == 0)
 	{
-		std::cout << "File Open Success!!";
+		std::cout << "File Open Success!!\n";
 		return fp;
 	}
 	else
@@ -178,7 +190,7 @@ inline FILE* Profiler::OpenFile(const wchar_t* filename) noexcept
 inline void Profiler::DrawProfileReportTitle(FILE* fp) const noexcept
 {
 	fwprintf(fp, L"\t----------------------------------------------------------------------------------------------\n\n");
-	fwprintf(fp, L"\tName\t|\tAverage\t|\tMin\t|\tMax\t|\tCall\t|\n");
+	fwprintf(fp, L"\t| Name\t|\tAverage\t\t|\tMin\t\t|\tMax\t\t|\tCall\t|\n");
 	fwprintf(fp, L"\t----------------------------------------------------------------------------------------------\n");
 }
 
@@ -186,7 +198,7 @@ inline void Profiler::DrawProfileReport(FILE* fp) const noexcept
 {
 	for (int idx = 0; idx < arridx; idx++)
 	{
-		fwprintf(fp, L"\t%s  |  %lfus\t|  %lfus\t|  %lfus\t|\t%d\n", list[idx]._name, list[idx]._totaltime / list[idx]._callcount,
+		fwprintf(fp, L"\t| %ls  |  %lfs\t|  %lfs\t|  %lfs\t|\t%d\n", list[idx]._name, list[idx]._totaltime / list[idx]._callcount,
 			list[idx]._Min, list[idx]._Max, list[idx]._callcount);
 	}
 	fwprintf(fp, L"\t---------------------------------------------------------------------------------------------\n");

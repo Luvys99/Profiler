@@ -1,35 +1,33 @@
 #include "Profiler.h"
+#include <vector>
 using namespace std;
 
 void Test1()
 {
-    PROFILE;
-    int a = 0;
-    for (int i = 0; i < 1000000; i++)
+    PROFILE
+    vector<int> vec;
+    for (int i = 0; i < 100000; i++)
     {
-        a++;
+        vec.push_back(i);
     }
 
 }
 
 void Test2()
 {
-    PROFILE;
-    int a = 0;
-    for (int i = 0; i < 10000; i++)
-    {
-        a++;
-    }
+    PROFILE
+    Sleep(1000);
 
 }
 
 void Test3()
 {
-    PROFILE;
-    int a = 0;
-    for (int i = 0; i < 1000; i++)
+    PROFILE
+
+        volatile int num = 0;
+    for (int j = 0; j < 100000; j++)
     {
-        a++;
+        num += sin(j) * cos(j);
     }
 
 }
